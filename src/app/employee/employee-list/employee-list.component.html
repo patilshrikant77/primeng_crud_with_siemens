@@ -1,0 +1,202 @@
+
+
+  <div class="card">
+    
+    <h2 class="cell-center">Employee List
+
+      <button style="float:right" pButton type="button" label="Add" class="p-button-info" (click)="showDialog()" ></button>
+    </h2>
+   
+
+    <p-table #dt1 [value]="empList" selectionMode="single"  dataKey="id" styleClass="p-datatable-customers"
+            [rows]="10" [paginator]="true" >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+                    <th>Address</th>
+                    <th>Company </th>
+                     <th>Actions </th> 
+                </tr>
+                <tr>
+                    <th>
+                    <p-autoComplete [(ngModel)]="selectedempName" [suggestions]="filteredEmpNames" (completeMethod)="filterEmployee($event,'name')"
+                     placeholder="search by Name" (change)="dt1.filter($event.target.value, 'name', 'contains')">
+                     </p-autoComplete>
+                       
+                    </th>
+                    <th>
+                      <p-autoComplete [(ngModel)]="selectedempAddress" [suggestions]="filteredEmpAddress" (completeMethod)="filterEmployee($event,'address')"
+                      placeholder="search by Address" (change)="dt1.filter($event.target.value, 'address.street', 'contains')">
+                      </p-autoComplete> 
+                      
+                    </th>
+                    <th>
+                      <p-autoComplete [(ngModel)]="selectedempCompany" [suggestions]="filteredEmpCompany" (completeMethod)="filterEmployee($event,'company')"
+                      placeholder="search by company" (change)="dt1.filter($event.target.value, 'company.name', 'contains')">
+                      </p-autoComplete>  
+                    </th>
+                    <th>
+                      <button pButton type="button" label="Reset" class="p-button-info" (click)="resetAll(dt1)"></button>
+                    </th>
+                   
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-employee>
+                <tr [pSelectableRow]="employee" >
+                    <td class="cell-center">
+                        <!-- <span class="p-column-title">Name</span> -->
+                        {{employee.name}}
+                    </td>
+                    <td>
+                        <!-- <span class="p-column-title">Address</span> -->
+                        <span class="image-text">{{employee.address.street}},{{employee.address.suite}},{{employee.address.city}},{{employee.address.zipcode}}</span>
+                    </td>
+                    <td>
+                        <!-- <span class="p-column-title">Company</span> -->
+                        <span class="image-text">{{employee.company.name}}</span>
+                    </td>
+                    <td>
+                        <!-- <span class="p-column-title">Actions</span> -->
+                        <button pButton type="button" label="Edit" class="p-button-info" ></button>
+                        &nbsp;
+                      
+                        <button pButton type="button" label="Delete" class="p-button-warning"  (click)="confirm($event,employee)"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="4">No customers found.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+
+
+    <!---deleted emplist-->
+    <div class="card">
+    
+      <h2 class="cell-center">Deleted Employee List</h2>
+     
+  
+      <p-table #dt2 [value]="deletedempList" selectionMode="single"  dataKey="id" styleClass="p-datatable-customers"
+              [rows]="10" [paginator]="true" >
+              <ng-template pTemplate="header">
+                  <tr>
+                      <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+                      <th>Address</th>
+                      <th>Company </th>
+                       <th>Actions </th> 
+                  </tr>
+                  <tr>
+                      <th>
+                      <p-autoComplete [(ngModel)]="delselectedempName" [suggestions]="delfilteredEmpNames" (completeMethod)="delfilterEmployee($event,'name')"
+                       placeholder="search by Name" (change)="dt2.filter($event.target.value, 'name', 'contains')">
+                       </p-autoComplete>
+                         
+                      </th>
+                      <th>
+                        <p-autoComplete [(ngModel)]="delselectedempAddress" [suggestions]="delfilteredEmpAddress" (completeMethod)="delfilterEmployee($event,'address')"
+                        placeholder="search by Address" (change)="dt2.filter($event.target.value, 'address.street', 'contains')">
+                        </p-autoComplete> 
+                        
+                      </th>
+                      <th>
+                        <p-autoComplete [(ngModel)]="delselectedempCompany" [suggestions]="delfilteredEmpCompany" (completeMethod)="delfilterEmployee($event,'company')"
+                        placeholder="search by company" (change)="dt2.filter($event.target.value, 'company.name', 'contains')">
+                        </p-autoComplete>  
+                      </th>
+                      <th>&nbsp;</th>
+                     
+                  </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-employee>
+                  <tr [pSelectableRow]="employee" >
+                      <td class="cell-center">
+                          <!-- <span class="p-column-title">Name</span> -->
+                          {{employee.name}}
+                      </td>
+                      <td>
+                          <!-- <span class="p-column-title">Address</span> -->
+                          <span class="image-text">{{employee.address.street}},{{employee.address.suite}},{{employee.address.city}},{{employee.address.zipcode}}</span>
+                      </td>
+                      <td>
+                          <!-- <span class="p-column-title">Company</span> -->
+                          <span class="image-text">{{employee.company.name}}</span>
+                      </td>
+                      <td>
+                         
+                        
+                          <button pButton type="button" label="Restore" class="p-button-warning"  (click)="restored(employee)"></button>
+                      </td>
+                  </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                  <tr>
+                      <td colspan="4">No customers found.</td>
+                  </tr>
+              </ng-template>
+          </p-table>
+      </div>
+
+    <p-confirmPopup></p-confirmPopup>
+    <p-toast></p-toast>
+    <p-dialog [(visible)]="display" [modal]="true" [baseZIndex]="10000" [draggable]="false" [resizable]="false" [breakpoints]="{'960px': '75vw', '640px': '100vw'}" [style]="{width: '50vw'}"> 
+      <ng-template pTemplate="header">
+          <h2>Add Employee</h2>
+      </ng-template>
+      <div class="card">
+        
+        <h5>Advanced</h5>
+        <div class="p-fluid p-formgrid p-grid">
+            <div class="p-field p-col-12 p-md-6">
+                <label for="firstname6">Firstname</label>
+                <input id="firstname6" type="text" pInputText> 
+            </div>
+            <div class="p-field p-col-12 p-md-6">
+                <label for="lastname6">Lastname</label>
+                <input id="lastname6" type="text" pInputText> 
+            </div>
+            <div class="p-field p-col-12 p-md-6">
+              <label for="email">Email</label>
+              <input id="email" type="text" pInputText> 
+          </div>
+          <div class="p-field p-col-12 p-md-6">
+              <label for="website">Website</label>
+              <input id="website" type="text" pInputText> 
+          </div>
+            
+            <div class="p-field p-col-6">
+              <label for="address">Company</label>
+              <input id="company" type="text" rows="4" pInputText>
+          </div>
+          <div class="p-field p-col-6">
+            <label for="address">Phone</label>
+            <input id="company" type="text" rows="4" pInputText>
+        </div>
+        <div class="p-field p-col-12">
+          <label for="address">Address</label>
+          <textarea id="address" type="text" rows="4" pInputTextarea></textarea>
+      </div>
+            <div class="p-field p-col-12 p-md-6">
+                <label for="city">City</label>
+                <input id="city" type="text" pInputText> 
+            </div>
+            <div class="p-field p-col-12 p-md-3">
+                <label for="state">State</label>
+                <p-dropdown inputId="state" [options]="states" [(ngModel)]="selectedState" placeholder="Select" optionLabel="name"></p-dropdown>
+            </div>
+            <div class="p-field p-col-12 p-md-3">
+                <label for="zip">Zip</label>
+                <input id="zip" type="text" pInputText> 
+            </div>
+        </div>
+    
+    </div>
+  
+      <p-footer>
+       
+        <button pButton type="button" label="Cancel" class="p-button-warning"  ></button>
+        <button pButton type="submit" label="Add" class="p-button-info"  ></button>
+      </p-footer>
+  </p-dialog>

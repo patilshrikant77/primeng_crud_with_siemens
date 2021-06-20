@@ -26,5 +26,14 @@ export interface ICompany {
     bs:string;
 }
 
+export interface IAutoSuggestion {
+  name:string[];
+  address:string[];
+  company:string[];
+}
+
+
+
+
 
 

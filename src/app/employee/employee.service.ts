@@ -15,4 +15,13 @@ export class EmployeeService {
     return this.http.get<IEmployee[]>(this.apiUrl);
 
   }
+
+  getCountries() {
+    return this.http.get<any>('assets/countries.json')
+      .toPromise()
+      .then(res => <any[]>res.data)
+      .then(data => { return data; });
+    }
 }
+
+
