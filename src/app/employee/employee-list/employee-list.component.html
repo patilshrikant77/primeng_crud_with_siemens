@@ -8,12 +8,12 @@
     </h2>
    
 
-    <p-table #dt1 [value]="empList" selectionMode="single"  dataKey="id" styleClass="p-datatable-customers"
-            [rows]="10" [paginator]="true" >
+    <p-table #dt1 [value]="empList"  (sortFunction)="sortRecord($event)" [customSort]="true" selectionMode="single"  dataKey="id" styleClass="p-datatable-customers"
+            [rows]="10" [paginator]="false" >
             <ng-template pTemplate="header">
                 <tr>
-                    <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
-                    <th>Address</th>
+                    <th >Name </th>
+                    <th pSortableColumn="address">Address<p-sortIcon field="address" ></p-sortIcon></th>
                     <th>Company </th>
                      <th>Actions </th> 
                 </tr>
@@ -57,7 +57,7 @@
                     </td>
                     <td>
                         <!-- <span class="p-column-title">Actions</span> -->
-                        <button pButton type="button" label="Edit" class="p-button-info" ></button>
+                        <button pButton type="button" label="Edit" class="p-button-info" (click)="editEmployee($event,employee)"></button>
                         &nbsp;
                       
                         <button pButton type="button" label="Delete" class="p-button-warning"  (click)="confirm($event,employee)"></button>
@@ -84,7 +84,7 @@
               <ng-template pTemplate="header">
                   <tr>
                       <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
-                      <th>Address</th>
+                      <th >Address </th>
                       <th>Company </th>
                        <th>Actions </th> 
                   </tr>
@@ -141,62 +141,68 @@
 
     <p-confirmPopup></p-confirmPopup>
     <p-toast></p-toast>
-    <p-dialog [(visible)]="display" [modal]="true" [baseZIndex]="10000" [draggable]="false" [resizable]="false" [breakpoints]="{'960px': '75vw', '640px': '100vw'}" [style]="{width: '50vw'}"> 
-      <ng-template pTemplate="header">
+    <p-dialog (onHide)="closeDialog()" [(visible)]="display" [modal]="true" [baseZIndex]="10000" [draggable]="false" [resizable]="false" [breakpoints]="{'960px': '75vw', '640px': '100vw'}" [style]="{width: '50vw'}"> 
+        
+        <ng-template pTemplate="header">
           <h2>Add Employee</h2>
       </ng-template>
       <div class="card">
-        
+        <form [formGroup]="empform" (ngSubmit)="submit()" class="p-3 bg-faded">
         <h5>Advanced</h5>
         <div class="p-fluid p-formgrid p-grid">
             <div class="p-field p-col-12 p-md-6">
                 <label for="firstname6">Firstname</label>
-                <input id="firstname6" type="text" pInputText> 
+                <input id="firstname"  formControlName="firstname" type="text" pInputText> 
             </div>
             <div class="p-field p-col-12 p-md-6">
                 <label for="lastname6">Lastname</label>
-                <input id="lastname6" type="text" pInputText> 
+                <input id="lastname" formControlName="lastname" type="text" pInputText> 
             </div>
             <div class="p-field p-col-12 p-md-6">
               <label for="email">Email</label>
-              <input id="email" type="text" pInputText> 
+              <input id="email" formControlName="email" type="text" pInputText> 
           </div>
           <div class="p-field p-col-12 p-md-6">
               <label for="website">Website</label>
-              <input id="website" type="text" pInputText> 
+              <input id="website" formControlName="website" type="text" pInputText> 
           </div>
             
             <div class="p-field p-col-6">
               <label for="address">Company</label>
-              <input id="company" type="text" rows="4" pInputText>
+              <input id="company" formControlName="company" type="text" rows="4" pInputText>
           </div>
           <div class="p-field p-col-6">
-            <label for="address">Phone</label>
-            <input id="company" type="text" rows="4" pInputText>
+            <label for="Phone">Phone</label>
+            <input id="Phone" formControlName="phone" type="text" rows="4" pInputText>
         </div>
         <div class="p-field p-col-12">
           <label for="address">Address</label>
-          <textarea id="address" type="text" rows="4" pInputTextarea></textarea>
+          <textarea id="address"  formControlName="address" type="text" rows="4" pInputTextarea></textarea>
       </div>
             <div class="p-field p-col-12 p-md-6">
                 <label for="city">City</label>
-                <input id="city" type="text" pInputText> 
+                <input id="city" formControlName="city" type="text" pInputText> 
             </div>
             <div class="p-field p-col-12 p-md-3">
-                <label for="state">State</label>
-                <p-dropdown inputId="state" [options]="states" [(ngModel)]="selectedState" placeholder="Select" optionLabel="name"></p-dropdown>
+                <label for="state">Suite</label>
+                <input id="suite" formControlName="suite" type="text" pInputText> 
+                <!-- <p-dropdown formControlName="suite" inputId="state" [options]="states" [(ngModel)]="selectedState" placeholder="Select" optionLabel="name"></p-dropdown> -->
             </div>
             <div class="p-field p-col-12 p-md-3">
                 <label for="zip">Zip</label>
-                <input id="zip" type="text" pInputText> 
+                <input id="zip" formControlName="zip" type="text" pInputText> 
             </div>
         </div>
-    
+        <div style="float: right;padding-bottom: 15px;">
+            <button pButton type="button" label="Cancel" class="p-button-warning"  (click)="closeDialog()" ></button>
+            &nbsp;
+            <button pButton type="submit" label="Add" class="p-button-info"  ></button>
+        </div>
+       
+    </form>
     </div>
   
-      <p-footer>
-       
-        <button pButton type="button" label="Cancel" class="p-button-warning"  ></button>
-        <button pButton type="submit" label="Add" class="p-button-info"  ></button>
-      </p-footer>
+      <!-- <p-footer>
+</p-footer> -->
+      
   </p-dialog>

@@ -22,6 +22,10 @@ export class EmployeeService {
       .then(res => <any[]>res.data)
       .then(data => { return data; });
     }
+
+    getlonlat(zipCode){
+      return this.http.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + zipCode + '&key=AIzaSyDR1884SVbhC4qtu1VVO4Lg0oZMzmOejrU');
+    }
 }
 
 

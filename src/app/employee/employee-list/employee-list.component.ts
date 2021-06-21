@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { IAutoSuggestion, IEmployee } from '../employee.interface';
 import { EmployeeService } from '../employee.service';
 import {ConfirmationService, MessageService,
@@ -13,6 +13,9 @@ import {ConfirmationService, MessageService,
 })
 export class EmployeeListComponent implements OnInit {
 
+  actionTaken:String='add';
+  selectedEmpforedit:IEmployee;
+
   selectedempName: any;
   selectedempAddress: any;
   selectedempCompany: any;
@@ -20,6 +23,7 @@ export class EmployeeListComponent implements OnInit {
   delselectedempName: any;
   delselectedempAddress: any;
   delselectedempCompany: any;
+  sortlatlngorder=false;
 
   
 
@@ -54,13 +58,17 @@ export class EmployeeListComponent implements OnInit {
         {name: 'Ohio', code: 'Ohio'},
         {name: 'Washington', code: 'Washington'}
     ];
+
+    
   
+    empform: FormGroup;
   
   constructor(
     private readonly employeeService:EmployeeService,
     private readonly confirmationService: ConfirmationService,
     private messageService: MessageService,
-    private primengConfig: PrimeNGConfig) {
+    private primengConfig: PrimeNGConfig,
+    private fb: FormBuilder) {
 
     this.filterSelectObj = [
       {
@@ -85,11 +93,37 @@ export class EmployeeListComponent implements OnInit {
   
   ngOnInit(): void {
 
+    this.empform = this.fb.group({
+      firstname: [],
+      lastname: [],
+      city: [],
+      suite: [],
+      address: [],
+      phone: [],
+      company: [],
+      website: [],
+      email:[],
+      zip:[]
+    });
+
 
     this.primengConfig.ripple = true;
     this.employeeService.getEmployeeList()
     .subscribe((data: IEmployee[]) => {
       this.empList = data;
+
+      /*----sorting array with lon and lat  to calculate distance first----*/
+     
+   this.empList.forEach(e=>{
+      e.address["distance"] = this.calculateDistance(this.empList[0].address.geo.lat,this.empList[0].address.geo.lng,e.address.geo.lat,e.address.geo.lng,"K");
+    })
+
+    this.empList.sort(function(a, b) { 
+      return a.address['distance'] - b.address['distance'];
+    });
+        
+      /*------end----------*/
+
       this.filterSelectObj.filter((o) => {
         //console.log(this.autoSuggesstions)
         this.autoSuggesstions[o.columnProp]=this.getFilterObject(this.empList, o.columnProp);
@@ -97,6 +131,22 @@ export class EmployeeListComponent implements OnInit {
 
       console.log(this.autoSuggesstions)
     })
+  }
+
+ calculateDistance(lat1, lon1, lat2, lon2, unit) {
+    var radlat1 = Math.PI * lat1/180
+    var radlat2 = Math.PI * lat2/180
+    var radlon1 = Math.PI * lon1/180
+    var radlon2 = Math.PI * lon2/180
+    var theta = lon1-lon2
+    var radtheta = Math.PI * theta/180
+    var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    dist = Math.acos(dist)
+    dist = dist * 180/Math.PI
+    dist = dist * 60 * 1.1515
+    if (unit=="K") { dist = dist * 1.609344 }
+    if (unit=="N") { dist = dist * 0.8684 }
+    return dist
   }
 
   // Get Uniqu values from columns to build filter
@@ -241,8 +291,122 @@ restored(data){
 
 
     showDialog() {
+      console.log('Action',this.actionTaken)
+         if(this.actionTaken==='add'){
+          this.empform.reset();
+         }
         this.display = true;
     }
+   submit(){
+     const employee=this.selectedEmpforedit;
+     let actionMsg="Employee added successfully";
+     const newEmp={
+      id:0,
+      username:'',
+      name: `${this.empform.value.firstname+' '+this.empform.value.lastname}`,
+      email:this.empform.value.email,
+      address: {
+        street:this.empform.value.address,
+        suite:this.empform.value.suite,
+        city:this.empform.value.city,
+        zipcode:this.empform.value.zip,
+        geo: {
+          lat:(this.actionTaken==='add')?0:employee.address.geo.lat,
+          lng:(this.actionTaken==='add')?0:employee.address.geo.lng
+         }
+
+      },
+      phone:this.empform.value.phone,
+      website:this.empform.value.website,
+      company:{
+        name:this.empform.value.company,
+        catchPhrase:(this.actionTaken==='add')?'NA':employee.company.catchPhrase,
+        bs:(this.actionTaken==='add')?'NA':employee.company.bs
+      }
+    }
+
+    console.log(newEmp);
+
+   
+
+   
+    //this.empList.push(newEmp);
+    if(this.actionTaken==='add'){
+      const id=Math.max(...this.empList.map(emp => emp.id))+1; //get max id form array object
+      newEmp.id=id;
+      newEmp.address.geo.lat=this.getRandomInRange(-180, 180, 3);
+      newEmp.address.geo.lat=this.getRandomInRange(-210, 190, 3);
+      newEmp.username=this.empform.value.firstname+id,
+  
+       this.empList= [...this.empList, newEmp];
+    }else{
+      newEmp.id=employee.id;
+      const index = this.empList.findIndex(a => a.id === employee.id) 
+      this.empList[index]=newEmp;
+      actionMsg="employee updated successfully";
+
+    }
+
+    this.messageService.add({
+      severity: "info",
+      summary: "Confirmed",
+      detail: actionMsg
+    });
+    this.display = false;
+
+    console.log('complete',this.empList);
+
+    }
+
+     getRandomInRange(from, to, fixed) {
+      return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
+      // .toFixed() returns string, so ' * 1' is a trick to convert to number
+    }
+
+    editEmployee(event: Event,employee){
+      this.empform.reset(this.empform.value);
+      this.selectedEmpforedit=employee;
+
+      this.empform.controls['email'].setValue(employee.email);
+      this.empform.controls['phone'].setValue(employee.phone);
+      this.empform.controls['address'].setValue(employee.address.street);
+      this.empform.controls['city'].setValue(employee.address.city);
+      this.empform.controls['suite'].setValue(employee.address.suite);
+      this.empform.controls['website'].setValue(employee.website);
+      this.empform.controls['zip'].setValue(employee.address.zipcode);
+      this.empform.controls['company'].setValue(employee.company.name);
+      const name=employee.name.split(' ');
+      this.empform.controls['firstname'].setValue(name[0]);
+      this.empform.controls['lastname'].setValue(name[1]);
+      this.actionTaken='edit';
+      this.showDialog();
+     // this.empform.value.email=employee.email;
+    }
+
+    closeDialog(){
+      this.display = false;
+      this.actionTaken='add';
+    }
+
+    sortRecord(event){
+      
+       this.sortlatlngorder=!this.sortlatlngorder;
+      this.empList.sort((a, b)=> { 
+       if(this.sortlatlngorder){
+        return b.address['distance'] - a.address['distance'];
+       }else{
+        return a.address['distance'] - b.address['distance'];
+       }
+      });
+    
+
+      
+
+      //console.log( this.empList, this.sortlatlngorder)
+      //data.sort
+
+    }
+    
 
 }
 
